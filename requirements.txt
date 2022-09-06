@@ -5,4 +5,3 @@ pandas
 flask
 lxml
 html5lib
-io
