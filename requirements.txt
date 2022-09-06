@@ -6,3 +6,4 @@ flask
 lxml
 html5lib
 flask_excel
+openpyxl
