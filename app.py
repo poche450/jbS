@@ -187,65 +187,63 @@ class JobScraper:
             return False
 
 app = Flask(__name__)
-class webapp:
-    def __init__():
-        pass   
-    @app.route('/', methods = ['POST', 'GET'])
-    def index():   
-        if 'submit' in request.form:            
-            job = request.form['jobName']
-            location = request.form['locationR']
-            pages = request.form['pagesR'] 
-            return redirect(url_for('getJob', jobName=job,locationR=location,pagesR=pages))
 
-        if 'export' in request.form:
-            result = request.form['export']
-            idMatch = result.split('&+&')   
-            buffer = BytesIO()
-            headers = {
-        'Content-Disposition': 'attachment; filename={}.xlsx'.format(idMatch[0]),
-        'Content-type': 'application/vnd.ms-excel'
-            }
-            result = request.form['export']
-            idMatch = result.split('&+&')
-            df: pd.DataFrame = pd.read_html(io=idMatch[2],attrs={"id":idMatch[0]})
-            df = df[0]
-            df.to_excel(buffer)
-            return Response(buffer.getvalue(), mimetype='application/vnd.ms-excel', headers=headers)
-        else: 
-            job = request.args.get('jobName')
-            location = request.args.get('locationR')
-            pages = request.args.get('pagesR')
-            return render_template('form.html', jobsTable=None)
-            
-            
+@app.route('/', methods = ['POST', 'GET'])
+def index():   
+    if 'submit' in request.form:            
+        job = request.form['jobName']
+        location = request.form['locationR']
+        pages = request.form['pagesR'] 
+        return redirect(url_for('getJob', jobName=job,locationR=location,pagesR=pages))
+
+    if 'export' in request.form:
+        result = request.form['export']
+        idMatch = result.split('&+&')   
+        buffer = BytesIO()
+        headers = {
+    'Content-Disposition': 'attachment; filename={}.xlsx'.format(idMatch[0]),
+    'Content-type': 'application/vnd.ms-excel'
+        }
+        result = request.form['export']
+        idMatch = result.split('&+&')
+        df: pd.DataFrame = pd.read_html(io=idMatch[2],attrs={"id":idMatch[0]})
+        df = df[0]
+        df.to_excel(buffer)
+        return Response(buffer.getvalue(), mimetype='application/vnd.ms-excel', headers=headers)
+    else: 
+        job = request.args.get('jobName')
+        location = request.args.get('locationR')
+        pages = request.args.get('pagesR')
+        return render_template('form.html', jobsTable=None)
+        
+        
 
 
-    @app.route('/<jobName>-<locationR>-<pagesR>')
-    def getJob(jobName,locationR,pagesR):
-        t0 = time.time()
-        scraper=JobScraper()
-        jobList=scraper.parseRequest(jobName)
-        locationList = scraper.parseRequest(locationR)
-        jobLocDict = list()
-        joblocString: list = []
-        for job in jobList:        
-            for loc in locationList:
-                jobLocDict.append({job:loc})
-                joblocString.append('{job} posting in {loc} market'.format(job=job,loc=loc))
-        urls:list= JobScraper().scrape_url(request=jobLocDict, maxPages=int(pagesR))
-        jobs:list = JobScraper().scrape(urls)
-        jobsTableHTML: list = []
-        returnDict:dict = {}
-        for i in range(len(jobs)):
-            df: pd.DataFrame = jobs[i]
-            jobsTableHTML.append(df.to_html(index=False,justify='center', na_rep='N/A', table_id=joblocString[i], render_links=True, escape=True, classes='{} table table-hover table-sm table-bordered'.format(joblocString[i])))      
-        for i in range(len(joblocString)):
-            returnDict[joblocString[i]] = jobsTableHTML[i]
-        t1 = time.time() - t0
-  
-        return render_template('form.html', jobsTable=returnDict, pagesR=pagesR)
+@app.route('/<jobName>-<locationR>-<pagesR>')
+def getJob(jobName,locationR,pagesR):
+    t0 = time.time()
+    scraper=JobScraper()
+    jobList=scraper.parseRequest(jobName)
+    locationList = scraper.parseRequest(locationR)
+    jobLocDict = list()
+    joblocString: list = []
+    for job in jobList:        
+        for loc in locationList:
+            jobLocDict.append({job:loc})
+            joblocString.append('{job} posting in {loc} market'.format(job=job,loc=loc))
+    urls:list= JobScraper().scrape_url(request=jobLocDict, maxPages=int(pagesR))
+    jobs:list = JobScraper().scrape(urls)
+    jobsTableHTML: list = []
+    returnDict:dict = {}
+    for i in range(len(jobs)):
+        df: pd.DataFrame = jobs[i]
+        jobsTableHTML.append(df.to_html(index=False,justify='center', na_rep='N/A', table_id=joblocString[i], render_links=True, escape=True, classes='{} table table-hover table-sm table-bordered'.format(joblocString[i])))      
+    for i in range(len(joblocString)):
+        returnDict[joblocString[i]] = jobsTableHTML[i]
+    t1 = time.time() - t0
+
+    return render_template('form.html', jobsTable=returnDict, pagesR=pagesR)
 
 
-    if __name__ == '__main__':
-        app.run()
+if __name__ == '__main__':
+    app.run()
