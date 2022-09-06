@@ -1,0 +1,170 @@
+<html lang="en">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <style>
+      body {font-family: Arial;}
+      
+      /* Style the tab */
+      .tab {
+        overflow: hidden;
+        border: 1px solid #ccc;
+        background-color: #f1f1f1;
+      }
+      
+      /* Style the buttons inside the tab */
+      .tab button {
+        background-color: inherit;
+        float: left;
+        border: none;
+        outline: none;
+        cursor: pointer;
+        padding: 14px 16px;
+        transition: 0.3s;
+        font-size: 17px;
+      }
+      .table {
+         font-size: 11px;
+      }
+  
+      /* Change background color of buttons on hover */
+      .tab button:hover {
+        background-color: rgba(143, 141, 141, 0.712);
+      }
+      
+      /* Create an active/current tablink class */
+      .tab button.active {
+        background-color: rgba(204, 204, 204, 0.699);
+      }
+   
+      /* Style the tab content */
+      .tabcontent {
+        display: none;
+        padding: 6px 12px;
+        border: 1px solid #ccc;
+        border-top: none;
+      }
+      </style>
+    <title>Job Posting Scraper</title>
+  </head>
+  <body>
+   <div class="container">
+    
+    <h1>Job Posting Scraper</h1>
+    <form action = "/" method = "post" class="form-col align-items-center">
+      <div class="form-row">
+      <div class="col">
+         <label class="sr-only"for="jobTitle">Job Title</label>
+         <input class="form-control form-control-sm md-12" id='jobTitle'placeholder="Job title used for search. If more than one, separate with ';'" name = "jobName">
+      </div>
+      <div class="col">
+         <label class="sr-only"for="location">Search Location</label>
+         <input  class="form-control form-control-sm" id='location' placeholder="Location used for search. If more than one, separate with ';'" name = "locationR">
+      </div>
+      </div>
+      <div class="form-row">
+         <div class="col col-md-2">
+         <label class="sr-only"for="pagesR">Maximum numbers of page</label>
+         <input  class="form-control form-control-sm" id="pagesR" placeholder="Maximum numbers of page searched." name = "pagesR">
+      </div>
+         <div class="col col-md-10">
+         <label class="sr-only"for="excludedKeyword">Keyword to exlcude</label>
+         <input  class="form-control form-control-sm" id='excludedKeyword'placeholder="Keyword to exclude. If more than one, separate with ';'" name = "jobName">
+      </div>
+      </div>
+        
+      
+       
+         <button type="submit" class="btn btn-primary mb-2" value="submit" name="submit">Submit</button>
+        
+       
+      
+   </form>
+   
+
+</div>
+<div class="col md-12">
+<h2>Scraped Job Posting</h2>
+<div class="tab">
+   {% if jobsTable != None: %}
+   {% for job, table in jobsTable.items(): %}
+  <button class="tablinks" onclick="openCity(event, '{{job}}')">{{job}}</button>
+  {% endfor %}
+  {% endif %}
+</div>
+{% if jobsTable != None: %}
+{% for job, table in jobsTable.items(): %}
+<div id='{{job}}' class="tabcontent">
+  <h3>{{job}} <!--<button type="button" class="btn btn-primary mb-2" value="export" name="export" onClick="exportTableToExcel('{{job}}', '{{job}}')">Export</button> -->
+   <form action = "/" method = "post">
+      <button type="submit" target="_blank" class="btn btn-primary mb-2" value="{{job}}&+&{{pagesR}}&+&{{table}}" name="export">Export to Excel</button> 
+   </form></h3>
+  <div class="table1">
+  {{table|safe}}
+</div>
+</div>
+{% endfor %}
+{% endif %}
+</div>
+</body>
+</html> 
+
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.14.7/dist/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+    
+    <script>
+      function exportTableToExcel(tableID, filename = ''){
+    var downloadLink;
+    var dataType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+    var tableSelect = document.getElementById(tableID);
+    var tableHTML = tableSelect.outerHTML.replace(/ /g, '%20');
+    
+    // Specify file name
+    filename = filename?filename+'.xls':'excel_data.xls';
+    
+    // Create download link element
+    downloadLink = document.createElement("a");
+    
+    document.body.appendChild(downloadLink);
+    
+    if(navigator.msSaveOrOpenBlob){
+        var blob = new Blob(['\ufeff', tableHTML], {
+            type: dataType
+        });
+        navigator.msSaveOrOpenBlob( blob, filename);
+    }else{
+        // Create a link to the file
+        downloadLink.href = 'data:' + dataType + ', ' + tableHTML;
+    
+        // Setting the file name
+        downloadLink.download = filename;
+        
+        //triggering the function
+        downloadLink.click();
+    }
+}
+    </script>
+    <script>
+function openCity(evt, cityName) {
+  var i, tabcontent, tablinks;
+  tabcontent = document.getElementsByClassName("tabcontent");
+  for (i = 0; i < tabcontent.length; i++) {
+    tabcontent[i].style.display = "none";
+  }
+  tablinks = document.getElementsByClassName("tablinks");
+  for (i = 0; i < tablinks.length; i++) {
+    tablinks[i].className = tablinks[i].className.replace(" active", "");
+  }
+  document.getElementById(cityName).style.display = "block";
+  evt.currentTarget.className += " active";
+}
+</script>
+  </body>
+</html>

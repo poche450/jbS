@@ -1,0 +1,8 @@
+bs4
+tqdm
+requests
+pandas
+flask
+lxml
+html5lib
+io
