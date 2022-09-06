@@ -186,14 +186,10 @@ class JobScraper:
         else:
             return False
 
-
+app = Flask(__name__)
 class webapp:
     def __init__():
-  
-        
-        pass
-    app = Flask(__name__)
-
+        pass   
     @app.route('/', methods = ['POST', 'GET'])
     def index():   
         if 'submit' in request.form:            
